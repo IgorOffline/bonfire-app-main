@@ -363,7 +363,7 @@ msgstr ""
 msgid "No instance pins yet."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
+#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
 #: lib/components/pin/widget_instance_pinned_carousel_live.sface:3
 #: lib/components/pin/widget_instance_pinned_live.sface:7
 #, elixir-autogen, elixir-format
@@ -460,19 +460,19 @@ msgstr ""
 msgid "Boost options"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
+#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
 #: lib/components/pin/widget_instance_pinned_carousel_live.sface:8
 #, elixir-autogen, elixir-format
 msgid "Nothing in the spotlight yet. Pinned posts from this instance will show up here."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
+#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
 #: lib/components/pin/widget_instance_pinned_carousel_live.sface:17
 #, elixir-autogen, elixir-format
 msgid "Scroll left"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
+#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/ https://campground.bonfire.cafe/dashboard
 #: lib/components/pin/widget_instance_pinned_carousel_live.sface:25
 #, elixir-autogen, elixir-format
 msgid "Scroll right"

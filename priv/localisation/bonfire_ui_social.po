@@ -1138,7 +1138,7 @@ msgstr ""
 msgid "Mark as read"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/
+#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/
 #: lib/components/activity/media/media_live.sface:314
 #, elixir-autogen, elixir-format
 msgid "Media Hidden"
@@ -1715,7 +1715,7 @@ msgstr ""
 msgid "Shares"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/ https://campground.bonfire.cafe/search https://campground.bonfire.cafe/feed/local
+#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/ https://campground.bonfire.cafe/search https://campground.bonfire.cafe/feed/local
 #: lib/components/activity/object/cw/cw_live.sface:22
 #, elixir-autogen, elixir-format
 msgid "Show"
@@ -2268,7 +2268,7 @@ msgid_plural "and %{number} others"
 msgstr[0] ""
 msgstr[1] ""
 
-#. URLs: https://campground.bonfire.cafe/
+#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/
 #: lib/components/activity/activity_live.ex:416
 #, elixir-autogen, elixir-format
 msgid "article"

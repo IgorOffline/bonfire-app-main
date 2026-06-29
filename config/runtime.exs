@@ -227,13 +227,29 @@ if config_env() != :test or federate? do
   config :tesla, :adapter, {Tesla.Adapter.Finch, name: Bonfire.Finch, pools: finch_pools}
 end
 
+oban_notifier =
+  case System.get_env("OBAN_NOTIFIER", "postgres") do
+    "pg" -> Oban.Notifiers.PG
+    "phoenix" -> Oban.Notifiers.Phoenix
+    _postgres -> Oban.Notifiers.Postgres
+  end
+
+# disable insert notifications?
+oban_insert_trigger = System.get_env("OBAN_INSERT_TRIGGER", "true") in ["true", "1", "yes"]
+
+# with insert_trigger enabled, polling is just a safety net for future-scheduled jobs and missed
+# notifications — 30s is sufficient and avoids constant background DB queries
+oban_stage_interval = System.get_env("OBAN_STAGE_INTERVAL_MS", "30000") |> String.to_integer()
+
+# average ms a producer waits before fetching more jobs after a trigger; jitter applies (0-2x actual)
+oban_dispatch_cooldown = System.get_env("OBAN_DISPATCH_COOLDOWN_MS", "5") |> String.to_integer()
+
 config :bonfire, Oban,
-  notifier: Oban.Notifiers.PG,
+  notifier: oban_notifier,
   repo: Bonfire.Common.Repo,
-  # avoid extra PubSub chatter as we don't need that much precision
-  insert_trigger: false,
-  # time between making scheduled jobs available and notifying relevant queues that jobs are available, affects how frequently the database is checked for jobs to run
-  stage_interval: :timer.seconds(2),
+  insert_trigger: oban_insert_trigger,
+  stage_interval: oban_stage_interval,
+  dispatch_cooldown: oban_dispatch_cooldown,
   queues: [
     federator_incoming_mentions:
       String.to_integer(System.get_env("QUEUE_SIZE_AP_IN_MENTIONS", "3")),
@@ -299,6 +315,9 @@ config :activity_pub, Oban,
   # to avoid running it twice
   queues: false,
   repo: Bonfire.Common.Repo
+
+config :activity_pub, :http,
+    user_agent: System.get_env("AP_USER_AGENT", "#{System.get_env("APP_NAME") || Bonfire.Application.name() || "Bonfire"} federation")
 
 config :activity_pub, ActivityPub.Federator.HTTP.RateLimit,
   scale_ms: String.to_integer(System.get_env("AP_RATELIMIT_PER_MS", "10000")),

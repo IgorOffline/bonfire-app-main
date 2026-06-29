@@ -59,3 +59,11 @@ tauri-plugin-openmls = { path = "../forks/tauri-plugin-openmls" }
 
 [patch."https://github.com/bonfire-networks/tauri-playwright"]
 tauri-plugin-playwright = { path = "../forks/tauri-plugin-playwright/packages/plugin" }
+
+# tls_codec ships a debug_assert! in quic_vec.rs that fires when the mls feature is active
+# and a stored length uses the 8-byte QUIC prefix (written by an older build without the mls
+# feature). Disabling debug assertions just for this crate lets the graceful Err path run
+# instead of killing the process. The mls-feature guard (if len_len_log > MAX_LEN_LEN_LOG
+# { return Err }) still fires and propagates the error normally.
+[profile.dev.package.tls_codec]
+debug-assertions = false

@@ -414,9 +414,7 @@ tauri-ios-teams:
 #   E2E_S1_ALICE_LOGIN      username for actor alice on server 1 (fallback: E2E_LOGIN)
 #   E2E_S1_ALICE_PASSWORD   password for actor alice on server 1 (fallback: E2E_PASSWORD)
 #
-# For test-tauri-e2e-federated (needs s1_alice + s1_bob + s2_charlie):
-#   E2E_S1_BOB_LOGIN        username for actor bob on server 1 (no fallback — must be set)
-#   (bob shares the same account/password as alice on server 1)
+# For test-tauri-e2e-federated (needs s1_alice + s2_charlie only):
 #   E2E_S2_CHARLIE_LOGIN    username for actor charlie on server 2 (fallback: E2E_LOGIN_B, then E2E_LOGIN)
 #   E2E_S2_CHARLIE_PASSWORD password for actor charlie on server 2 (fallback: E2E_PASSWORD_B, then E2E_PASSWORD)
 #
@@ -427,42 +425,46 @@ tauri-ios-teams:
 # Server 2 (port 4002) is started automatically when with_s2_charlie=true via TEST_INSTANCE=yes.
 # ────────────────────────────────────────────────────────────────────────────────────────────────
 
-test-tauri-e2e-all grep="" *pw_flags="": services
-	just _test-tauri-e2e "{{grep}}" "true" "true" "true" "{{pw_flags}}"
+test-tauri-e2e-all grep="" exclude_grep="'@proposal'" *pw_flags="": services
+	just _test-tauri-e2e "{{grep}}" "true" "true" "true" "{{pw_flags}}" "{{exclude_grep}}"
 
 # Run single-device Tauri e2e tests. Requires: E2E_S1_ALICE_LOGIN/PASSWORD (or E2E_LOGIN/PASSWORD).
-# Pass extra Playwright flags via pw_flags, e.g.: just test-tauri-e2e-single --last-failed
-# grep= overrides the Playwright filter: just test-tauri-e2e-single grep="my test name"
-test-tauri-e2e-single grep="@single-device(?!-)" *pw_flags="": services
-	just _test-tauri-e2e "{{grep}}" "false" "false" "false" "{{pw_flags}}"
+# @proposal tests are skipped by default. To include them: pass exclude_grep=''
+# Pass extra Playwright flags after grep, e.g.: just test-tauri-e2e-single @single-device --last-failed
+# Override the Playwright filter (positional): just test-tauri-e2e-single "my test name"
+test-tauri-e2e-single grep="@single-device(?!-)" exclude_grep="'@proposal'" *pw_flags="": services
+	just _test-tauri-e2e "{{grep}}" "false" "false" "false" "{{pw_flags}}" "{{exclude_grep}}"
 
 # Run co-device Tauri e2e tests: 1 server, 2 clients, same actor (s1_alice_d1 + s1_alice_d2).
 # Set E2E_S1_ALICE_LOGIN and E2E_S1_ALICE_PASSWORD in your .env.
-# Pass extra Playwright flags via pw_flags, e.g.: just test-tauri-e2e-co-device --last-failed
-# grep= overrides the Playwright filter: just test-tauri-e2e-co-device grep="my test name"
-test-tauri-e2e-co-device grep="@co-device(?!-)" *pw_flags="": services
-	just _test-tauri-e2e "{{grep}}" "true" "false" "false" "{{pw_flags}}"
+# Override the Playwright filter (positional): just test-tauri-e2e-co-device "my test name"
+test-tauri-e2e-co-device grep="@co-device(?!-)" exclude_grep="'@proposal'" *pw_flags="": services
+	just _test-tauri-e2e "{{grep}}" "true" "false" "false" "{{pw_flags}}" "{{exclude_grep}}"
 
 # Run federated Tauri e2e tests: 2 servers, 3 clients (s1_alice_d1 + s1_bob_d1 + s2_charlie_d1).
 # Set E2E_S1_ALICE_LOGIN/PASSWORD, E2E_S1_BOB_LOGIN/PASSWORD, E2E_S2_CHARLIE_LOGIN/PASSWORD in your .env.
-# Pass extra Playwright flags via pw_flags, e.g.: just test-tauri-e2e-federated --last-failed
-# grep= overrides the Playwright filter: just test-tauri-e2e-federated grep="staggered commit"
-test-tauri-e2e-federated grep="@federated(?!-)" *pw_flags="": services
-	just _test-tauri-e2e "{{grep}}" "false" "true" "true" "{{pw_flags}}"
+# Override the Playwright filter (positional): just test-tauri-e2e-federated "staggered commit"
+test-tauri-e2e-federated grep="@federated(?!-)" exclude_grep="'@proposal'" *pw_flags="": services
+	just _test-tauri-e2e "{{grep}}" "false" "true" "false" "{{pw_flags}}" "{{exclude_grep}}"
+
+# Run 3-crowd federated Tauri e2e tests: 2 servers, 3 actors (s1_alice_d1 + s1_bob_d1 + s2_charlie_d1).
+# Set E2E_S1_ALICE_LOGIN/PASSWORD, E2E_S1_BOB_LOGIN/PASSWORD, E2E_S2_CHARLIE_LOGIN/PASSWORD in your .env.
+# Override the Playwright filter (positional): just test-tauri-e2e-federated-3crowd "staggered commit"
+test-tauri-e2e-federated-3crowd grep="@federated-3crowd" exclude_grep="" *pw_flags="": services
+	just _test-tauri-e2e "{{grep}}" "false" "true" "true" "{{pw_flags}}" "{{exclude_grep}}"
 
 # Run federated co-device Tauri e2e tests: 2 servers, 3 clients (s1_alice_d1 + s1_alice_d2 + s2_charlie_d1).
 # Set E2E_S1_ALICE_LOGIN/PASSWORD and E2E_S2_CHARLIE_LOGIN/PASSWORD in your .env.
-# Pass extra Playwright flags via pw_flags, e.g.: just test-tauri-e2e-federated-co-device --last-failed
-# grep= overrides the Playwright filter: just test-tauri-e2e-federated-co-device grep="my test name"
-test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" *pw_flags="": services
-	just _test-tauri-e2e "{{grep}}" "true" "true" "false" "{{pw_flags}}"
+# Override the Playwright filter (positional): just test-tauri-e2e-federated-co-device "my test name"
+test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" exclude_grep="'@proposal'" *pw_flags="": services
+	just _test-tauri-e2e "{{grep}}" "true" "true" "false" "{{pw_flags}}" "{{exclude_grep}}"
 
 # Internal: start servers, obtain tokens, launch Tauri instances, run Playwright.
 # Naming: server{N}_{actor}_{deviceN} — socket 1=s1_alice_d1, 2=s1_alice_d2, 3=s2_charlie_d1, 4=s1_bob_d1
 # with_s1_alice2=true  → s1_alice_d2 (same actor as alice, socket 2)
 # with_s2_charlie=true → s2_charlie_d1 (server 2, socket 3)
 # with_s1_bob=true     → s1_bob_d1 (2nd actor on server 1, socket 4)
-@_test-tauri-e2e grep="@single-device(?!-)" with_s1_alice2="false" with_s2_charlie="false" with_s1_bob="false" pw_flags="":
+@_test-tauri-e2e grep="@single-device(?!-)" with_s1_alice2="false" with_s2_charlie="false" with_s1_bob="false" pw_flags="" exclude_grep="'@proposal'":
 	#!/usr/bin/env bash
 	set -e
 	cleanup() {
@@ -478,10 +480,10 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" *pw_flags=""
 
 	if [ "{{with_s2_charlie}}" = "true" ]; then
 	  echo "Starting server 1 (port 4000) + server 2 (port 4002) in one process..."
-	  HOT_CODE_RELOAD=0 TEST_INSTANCE=yes just mix phx.server &
+	  HOT_CODE_RELOAD=0 TEST_INSTANCE=yes FEDERATE=yes DISABLE_LIVE_DEBUGGER=yes just mix phx.server &
 	else
 	  echo "Starting server 1 on port 4000..."
-	  HOT_CODE_RELOAD=0 just mix phx.server &
+	  HOT_CODE_RELOAD=0 DISABLE_LIVE_DEBUGGER=yes just mix phx.server &
 	fi
 
 	echo "Waiting for server 1..."
@@ -648,7 +650,7 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" *pw_flags=""
 	export E2E_DEVICE_S1_ALICE2={{ if with_s1_alice2 == "true" { "1" } else { "" } }}
 	export E2E_DEVICE_S2_CHARLIE={{ if with_s2_charlie == "true" { "1" } else { "" } }}
 	export E2E_DEVICE_S1_BOB={{ if with_s1_bob == "true" { "1" } else { "" } }}
-	cd extensions/bonfire_ui_common/assets/static/tauri && yarn test {{ if grep != "" { "'--grep' '" + grep + "'" } else { "" } }} {{pw_flags}}
+	cd extensions/bonfire_ui_common/assets/static/tauri && yarn test {{ if grep != "" { "'--grep' '" + grep + "'" } else { "" } }} {{ if exclude_grep != "" { "'--grep-invert' " + exclude_grep } else { "" } }} {{pw_flags}}
 
 # Drop the dance instance DB (so it gets re-created and re-migrated on next startup)
 dev-dance-db-down:
