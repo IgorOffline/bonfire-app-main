@@ -1572,7 +1572,7 @@ msgstr ""
 msgid "Remote Activity"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/feed/local
+#. URLs: https://campground.bonfire.cafe/feed/my https://campground.bonfire.cafe/feed/local
 #: lib/components/activity/actions/more_actions_live.sface:216
 #: lib/components/activity/quote_request_footer_live.sface:51
 #, elixir-autogen, elixir-format
@@ -2268,7 +2268,7 @@ msgid_plural "and %{number} others"
 msgstr[0] ""
 msgstr[1] ""
 
-#. URLs: https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/
+#. URLs: https://campground.bonfire.cafe/feed/my https://campground.bonfire.cafe/dashboard https://campground.bonfire.cafe/index.html https://campground.bonfire.cafe/
 #: lib/components/activity/activity_live.ex:416
 #, elixir-autogen, elixir-format
 msgid "article"
@@ -2494,7 +2494,7 @@ msgstr ""
 msgid "%{count} hidden"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/discussion/01KVWY9TVQHREBK39K53X071TH https://campground.bonfire.cafe/discussion/01KVWY9QTASHP63V7PN3PSTHP7
+#. URLs: https://campground.bonfire.cafe/feed/my https://campground.bonfire.cafe/discussion/01KVWY9TVQHREBK39K53X071TH https://campground.bonfire.cafe/discussion/01KVWY9QTASHP63V7PN3PSTHP7
 #: lib/components/thread/thread_branch_live.sface:117
 #: lib/components/thread/thread_branch_live.sface:134
 #, elixir-autogen, elixir-format
@@ -3602,6 +3602,7 @@ msgstr ""
 msgid "Tomorrow"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/feed/my
 #: lib/components/widgets/widget_participants/widget_participants_live.sface:7
 #: lib/components/widgets/widget_participants/widget_participants_live.sface:7
 #, elixir-autogen, elixir-format
@@ -3624,6 +3625,7 @@ msgstr ""
 msgid "days"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/feed/my
 #: lib/components/thread/thread_stats_live.sface:15
 #, elixir-autogen, elixir-format
 msgid "last"
@@ -3645,6 +3647,7 @@ msgstr ""
 msgid "Broadcast"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/feed/my
 #: lib/components/thread/thread_live.sface:189
 #, elixir-autogen, elixir-format
 msgid "Loading…"
