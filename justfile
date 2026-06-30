@@ -271,11 +271,11 @@ _dev *args='':
 	MIX_ENV=dev just dev-run "db search" {{args}}
 
 @dev-extra:
-	iex --sname extra --cookie $ERLANG_COOKIE --remsh localenv@127.0.0.1
+	iex --sname extra --cookie $RELEASE_COOKIE --remsh localenv@127.0.0.1
 
 dev-run services="db search" *args='': 
 	@just init "{{services}}"
-	{{ if WITH_DOCKER == "total" { "just dev-docker $args" } else { "iex --name localenv@127.0.0.1 --cookie $ERLANG_COOKIE -S mix phx.server $args" } }}
+	{{ if WITH_DOCKER == "total" { "just dev-docker $args" } else { "iex --name localenv@127.0.0.1 --cookie $RELEASE_COOKIE -S mix phx.server $args" } }}
 # TODO: pass args to docker as well
 
 @dev-remote: init
@@ -1665,7 +1665,7 @@ secrets:
 	echo "SECRET_KEY_BASE=$(just rand 128)"
 	echo "SIGNING_SALT=$(just rand 128)"
 	echo "ENCRYPTION_SALT=$(just rand 128)"
-	echo "ERLANG_COOKIE=$(just rand 42)"
+	echo "RELEASE_COOKIE=$(just rand 42)"
 	echo "POSTGRES_PASSWORD=$(just rand 42)"
 	echo "MEILI_MASTER_KEY=$(just rand 42)"
 	echo "SONIC_PASSWORD=$(just rand 42)"
