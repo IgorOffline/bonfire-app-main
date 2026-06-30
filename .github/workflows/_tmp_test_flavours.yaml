@@ -1,0 +1,14 @@
+name: _tmp test flavours
+on:
+  workflow_dispatch:
+jobs:
+  flavours:
+    uses: ./.github/workflows/flavours.yaml
+  show:
+    needs: flavours
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flavour: ${{ fromJSON(needs.flavours.outputs.build) }}
+    steps:
+      - run: echo "MATRIX flavour=${{ matrix.flavour }} | manifest=${{ needs.flavours.outputs.manifest }} | otp=${{ needs.flavours.outputs.otp }}"

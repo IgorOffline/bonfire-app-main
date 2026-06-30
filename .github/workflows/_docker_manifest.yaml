@@ -1,0 +1,52 @@
+name: Docker multi-arch manifest (reusable)
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version string for the :<version>-<flavour> manifest'
+        required: true
+        type: string
+      tag_suffixes:
+        description: 'Space-separated latest-* suffixes to build manifests for (e.g. "latest-unstable" or "latest-alpha latest-beta")'
+        required: true
+        type: string
+      flavours:
+        description: 'JSON array of flavours (e.g. ["social","open_science"])'
+        required: true
+        type: string
+
+jobs:
+  manifest:
+    name: Create and push multi-arch manifest for ${{ matrix.flavour }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flavour: ${{ fromJSON(inputs.flavours) }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Create and push manifest
+        run: |
+          set -e
+          # Combine each applicable tag suffix plus the bare version into a multi-arch manifest
+          for TAG in ${{ inputs.tag_suffixes }} ${{ inputs.version }}; do
+            images=""
+            for platform in amd64 aarch64 arm32v7; do
+              image=bonfirenetworks/bonfire:${TAG}-${{ matrix.flavour }}-$(echo $platform | sed 's#/#-#g')
+              if docker buildx imagetools inspect $image > /dev/null 2>&1; then
+                images="$images $image"
+              else
+                echo "Skipping missing image: $image"
+              fi
+            done
+            if [ -n "$images" ]; then
+              docker buildx imagetools create -t bonfirenetworks/bonfire:${TAG}-${{ matrix.flavour }} $images
+            else
+              echo "No images found for manifest for tag $TAG, skipping."
+            fi
+          done

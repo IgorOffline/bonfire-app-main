@@ -1,0 +1,52 @@
+name: Compute release tags
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'The version string (e.g. 0.9.0-beta.1)'
+        required: true
+        type: string
+      extra_suffixes:
+        description: 'Extra tag suffixes to always include (space-separated, e.g. "unstable")'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      tag_suffixes:
+        description: 'Space-separated list of latest-* tag suffixes applicable to this version'
+        value: ${{ jobs.compute.outputs.tag_suffixes }}
+      prerelease:
+        description: 'Whether this version is a prerelease (true unless it is a stable version)'
+        value: ${{ jobs.compute.outputs.prerelease }}
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_suffixes: ${{ steps.compute.outputs.tag_suffixes }}
+      prerelease: ${{ steps.compute.outputs.prerelease }}
+    steps:
+      - name: Compute tag suffixes and prerelease flag
+        id: compute
+        run: |
+          VERSION="${{ inputs.version }}"
+          TAGS=()
+          if [[ "$VERSION" =~ -rc ]]; then
+            TAGS+=(latest-rc latest-beta latest-alpha)
+            PRERELEASE=true
+          elif [[ "$VERSION" =~ -beta ]]; then
+            TAGS+=(latest-beta latest-alpha)
+            PRERELEASE=true
+          elif [[ "$VERSION" =~ -alpha ]]; then
+            TAGS+=(latest-alpha)
+            PRERELEASE=true
+          else
+            TAGS+=(latest latest-rc latest-beta latest-alpha)
+            PRERELEASE=false
+          fi
+          # Prepend any always-on extra suffixes (e.g. "unstable" -> "latest-unstable")
+          for EXTRA in ${{ inputs.extra_suffixes }}; do
+            TAGS=("latest-${EXTRA}" "${TAGS[@]}")
+          done
+          echo "tag_suffixes=${TAGS[*]}" >> $GITHUB_OUTPUT
+          echo "prerelease=${PRERELEASE}" >> $GITHUB_OUTPUT
+          echo "Computed tag_suffixes='${TAGS[*]}' prerelease='${PRERELEASE}' for version '$VERSION'"

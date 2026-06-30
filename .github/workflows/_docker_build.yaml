@@ -1,0 +1,129 @@
+name: Docker build (reusable)
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        description: 'Docker platform to build (e.g. linux/amd64)'
+        required: true
+        type: string
+      arch:
+        description: 'Arch suffix for image tags (e.g. amd64, aarch64)'
+        required: true
+        type: string
+      version:
+        description: 'Version string used for the :<version>-<flavour>-<arch> tag'
+        required: true
+        type: string
+      tag_suffixes:
+        description: 'Space-separated latest-* suffixes to emit (e.g. "latest-unstable" or "latest-alpha latest-beta")'
+        required: true
+        type: string
+      flavours:
+        description: 'JSON array of flavours to build (e.g. ["social","community"])'
+        required: true
+        type: string
+
+jobs:
+  docker:
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        flavour: ${{ fromJSON(inputs.flavours) }}
+    name: ${{ matrix.flavour }} - Docker on ${{ inputs.platforms }}
+    runs-on: ubuntu-latest
+    permissions: write-all
+    env:
+      FLAVOUR: ${{ matrix.flavour }}
+      DOCKER_REPO: bonfire
+      WITH_AI: "0"
+      WITH_LV_NATIVE: "0"
+      WITH_IMAGE_VIX: "0"
+      # ^ TEMP workaround for evision_nif crash on app start
+      WITH_API_GRAPHQL: "1"
+      APPSIGNAL_PUSH_API_KEY: "1"
+      MIX_ENV: prod
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2 # needed for action-detect-and-tag-new-version
+      - name: Load .tool-versions to env
+        run: |
+          ls -la && chmod +x tool-versions-to-env.sh
+          # Run the script to extract versions and save to output
+          ./tool-versions-to-env.sh 2
+      - name: Set computed env vars
+        run: |
+          # Strip any -otp suffix from ELIXIR_VERSION
+          if [[ "$ELIXIR_VERSION" == *-otp-* ]]; then
+            ELIXIR_VERSION="${ELIXIR_VERSION%%-otp-*}"
+            echo "ELIXIR_VERSION=$ELIXIR_VERSION" >> $GITHUB_ENV
+          fi
+
+          if [ "${{ inputs.arch }}" = "arm32v7" ]; then
+            ERLANG_VERSION_MAJOR="${ERLANG_VERSION%%.*}" # e.g. 27 from 27.3.4
+            export ELIXIR_DOCKER_IMAGE="arm32v7/elixir:${ELIXIR_VERSION}-otp-${ERLANG_VERSION_MAJOR}-alpine"
+            export RUSTLER_BUILD_ALL="true"
+          else
+            export ELIXIR_DOCKER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${ERLANG_VERSION}-alpine-${ALPINE_VERSION}"
+          fi
+          echo "ELIXIR_DOCKER_IMAGE=$ELIXIR_DOCKER_IMAGE" >> $GITHUB_ENV
+          echo "RUSTLER_BUILD_ALL=$RUSTLER_BUILD_ALL" >> $GITHUB_ENV
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Install tools
+        run: sudo apt-get update -y && sudo apt-get install -y cargo && cargo install just && echo "/github/home/.cargo/bin" >> $GITHUB_PATH
+      -
+        name: Configure Git authentication for GitHub
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      -
+        name: Flavour setup
+        run: just _clone_flavour_apps && just _config_flavour ${{ env.FLAVOUR }} && just _flavour_install ${{ env.FLAVOUR }} --yes && just flavour_make_symlinks ${{ env.FLAVOUR }} && just _rel-prepare
+      - name: Build docker tags list
+        id: read_tags
+        run: |
+          : > docker_tags.txt
+          for SUFFIX in ${{ inputs.tag_suffixes }}; do
+            echo "bonfirenetworks/${{ env.DOCKER_REPO }}:${SUFFIX}-${{ env.FLAVOUR }}-${{ inputs.arch }}" >> docker_tags.txt
+          done
+          echo "bonfirenetworks/${{ env.DOCKER_REPO }}:${{ inputs.version }}-${{ env.FLAVOUR }}-${{ inputs.arch }}" >> docker_tags.txt
+          TAGS=$(paste -sd, docker_tags.txt)
+          echo "DOCKER_TAGS=$TAGS" >> $GITHUB_ENV
+          echo "Tags: $TAGS"
+      -
+        name: Build & push Docker image
+        id: docker_build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.release
+          platforms: ${{ inputs.platforms }}
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          build-args: |
+            FLAVOUR=${{ env.FLAVOUR }}
+            WITH_AI=${{ env.WITH_AI }}
+            WITH_LV_NATIVE=${{ env.WITH_LV_NATIVE }}
+            WITH_IMAGE_VIX=${{ env.WITH_IMAGE_VIX }}
+            WITH_API_GRAPHQL=${{ env.WITH_API_GRAPHQL }}
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+            ELIXIR_DOCKER_IMAGE=${{ env.ELIXIR_DOCKER_IMAGE }}
+            RUSTLER_BUILD_ALL=${{ env.RUSTLER_BUILD_ALL }}
+          tags: ${{ env.DOCKER_TAGS }}
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}

@@ -1,0 +1,69 @@
+name: Maybe release (step 1 - unstable amd64)
+on:
+  push:
+  # workflow_run: # uncomment to run after tests have run
+  #   workflows: ["Maybe test"]
+  #   types:
+  #     - completed
+  #   branches:
+  #     - main
+
+# Step 1 of a two-step release:
+#  - builds ONLY linux/amd64 docker images and publishes them under the untested `latest-unstable` tier
+#  - creates the git tag (but no GitHub Release yet)
+# Once the unstable images are tested, run `release-promote.yaml` (step 2) to build arm64,
+# promote the amd64 images to the applicable latest-alpha/beta/rc/latest tags, build the
+# multi-arch manifests, and publish the OTP tarballs + GitHub Release.
+
+jobs:
+  check_version_changed:
+    uses: ./.github/workflows/check_version_changed.yaml
+
+  flavours:
+    uses: ./.github/workflows/flavours.yaml
+
+  otp_tag:
+    needs: check_version_changed
+    # if: ${{ needs.check_version_changed.outputs.version_changed == 'true' }}
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    permissions: write-all
+    outputs:
+      tag: ${{ steps.version.outputs.tag || format('v{0}', steps.version.outputs.current-version) }}
+      version: ${{ steps.version.outputs.current-version }}
+    steps:
+      - name: Install git
+        run: apt-get update -q -y && apt-get install -q -y git
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 5
+      - name: Trust my repo
+        run: export GIT_CEILING_DIRECTORIES=/__w && git config --global --add safe.directory $(realpath .)
+      - name: Detect and tag version
+        id: version
+        uses: salsify/action-detect-and-tag-new-version@v2
+        with:
+          create-tag: true
+          version-command: |
+            grep -m 1 'version:' mix.exs | cut -d '"' -f2
+
+  docker:
+    needs: [check_version_changed, otp_tag, flavours]
+    if: ${{ needs.check_version_changed.outputs.version_changed == 'true' }}
+    uses: ./.github/workflows/_docker_build.yaml
+    secrets: inherit
+    with:
+      platforms: linux/amd64
+      arch: amd64
+      version: ${{ needs.otp_tag.outputs.version }}
+      tag_suffixes: latest-unstable
+      flavours: ${{ needs.flavours.outputs.build }}
+
+  docker_multi_arch_image:
+    needs: [otp_tag, flavours, docker]
+    uses: ./.github/workflows/_docker_manifest.yaml
+    secrets: inherit
+    with:
+      version: ${{ needs.otp_tag.outputs.version }}
+      tag_suffixes: latest-unstable
+      flavours: ${{ needs.flavours.outputs.manifest }}

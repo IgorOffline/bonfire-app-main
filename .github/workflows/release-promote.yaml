@@ -1,0 +1,208 @@
+name: Promote release (step 2 - arm64 + OTP + tags)
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to promote (e.g. 0.9.0-beta.1). Leave blank to use the current mix.exs version.'
+        required: false
+        type: string
+
+# Step 2 of a two-step release (run manually once the step-1 `latest-unstable` amd64 images are tested):
+#  - builds the linux/arm64 docker images
+#  - promotes the already-built amd64 images by adding the applicable latest-alpha/beta/rc/latest tags
+#    to the SAME image digest (re-tag, no rebuild)
+#  - creates the multi-arch manifests (amd64 + arm64)
+#  - builds the debian/rhel OTP tarballs and creates the GitHub Release (prerelease flag tier-driven)
+
+jobs:
+  detect_version:
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - name: Install git
+        run: apt-get update -q -y && apt-get install -q -y git
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 5
+      - name: Trust my repo
+        run: export GIT_CEILING_DIRECTORIES=/__w && git config --global --add safe.directory $(realpath .)
+      - name: Detect version
+        id: version
+        uses: salsify/action-detect-and-tag-new-version@v2
+        with:
+          create-tag: false
+          version-command: |
+            grep -m 1 'version:' mix.exs | cut -d '"' -f2
+      - name: Resolve version (input overrides detected)
+        id: resolve
+        run: |
+          VERSION="${{ inputs.version || steps.version.outputs.current-version }}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Promoting version '$VERSION' (tag v$VERSION)"
+
+  flavours:
+    uses: ./.github/workflows/flavours.yaml
+
+  compute_tags:
+    needs: detect_version
+    uses: ./.github/workflows/compute_release_tags.yaml
+    with:
+      version: ${{ needs.detect_version.outputs.version }}
+
+  docker_arm64:
+    needs: [detect_version, compute_tags, flavours]
+    uses: ./.github/workflows/_docker_build.yaml
+    secrets: inherit
+    with:
+      platforms: linux/arm64
+      arch: aarch64
+      version: ${{ needs.detect_version.outputs.version }}
+      tag_suffixes: ${{ needs.compute_tags.outputs.tag_suffixes }}
+      flavours: ${{ needs.flavours.outputs.build }}
+
+  retag_amd64:
+    needs: [detect_version, compute_tags, flavours]
+    name: Re-tag amd64 ${{ matrix.flavour }} to promotion tiers
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flavour: ${{ fromJSON(needs.flavours.outputs.build) }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Add promotion tags to the existing amd64 image (same digest, no rebuild)
+        run: |
+          set -e
+          SOURCE=bonfirenetworks/bonfire:${{ needs.detect_version.outputs.version }}-${{ matrix.flavour }}-amd64
+          for SUFFIX in ${{ needs.compute_tags.outputs.tag_suffixes }}; do
+            TARGET=bonfirenetworks/bonfire:${SUFFIX}-${{ matrix.flavour }}-amd64
+            echo "Re-tagging $SOURCE -> $TARGET"
+            docker buildx imagetools create -t "$TARGET" "$SOURCE"
+          done
+
+  docker_multi_arch_image:
+    needs: [detect_version, compute_tags, flavours, docker_arm64, retag_amd64]
+    uses: ./.github/workflows/_docker_manifest.yaml
+    secrets: inherit
+    with:
+      version: ${{ needs.detect_version.outputs.version }}
+      tag_suffixes: ${{ needs.compute_tags.outputs.tag_suffixes }}
+      flavours: ${{ needs.flavours.outputs.manifest }}
+
+  otp_release_amd64:
+    needs: [detect_version, compute_tags, flavours]
+    name: ${{ matrix.flavour }} - OTP on ${{ matrix.distro }}-${{ matrix.distro_version }} / amd64
+    strategy:
+      matrix:
+        flavour: ${{ fromJSON(needs.flavours.outputs.otp) }}
+        distro: ["debian", "rhel"]
+        include:
+          - distro: debian
+            distro_version: bookworm
+            container: debian:bookworm # i.e. what's required by Yunohost
+            install_git: apt-get update -q -y && apt-get install -q -y git
+          - distro: rhel
+            distro_version: "9"
+            container: redhat/ubi9
+            install_git: dnf install -q -y git
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    permissions: write-all
+    env:
+      FLAVOUR: ${{ matrix.flavour }}
+      WITH_DOCKER: no
+      MIX_ENV: prod
+      TERM: linux
+      WITH_AI: "0"
+      WITH_LV_NATIVE: "0"
+      AUTO_YES: "true"
+    steps:
+      - name: Install git # needed for checkout with fetch-depth
+        run: ${{ matrix.install_git }}
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 5 # needed for action-detect-and-tag-new-version
+      - name: Trust my repo
+        run: export GIT_CEILING_DIRECTORIES=/__w && git config --global --add safe.directory $(realpath .) # see https://github.com/actions/checkout/issues/760
+      - name: Add path
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      -
+        name: Install system deps & tools
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x deps-${{ matrix.distro }}-build.sh && ./deps-${{ matrix.distro }}-build.sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/mise/shims" >> $GITHUB_PATH
+      - name: Debug
+        run: |
+          echo $PATH
+          whoami
+      - name: Check just
+        run: just --version
+      - name: Check yarn
+        run: yarn -v
+      - name: Check Erlang
+        run: which erl
+      - name: Check Elixir
+        run: elixir -v
+      - name: Check mix
+        run: mix -v
+      -
+        name: Install mix tools
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+      -
+        name: Configure Git authentication for GitHub
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      -
+        name: Initialize Bonfire configuration
+        run: |
+          just config
+      -
+        name: Clone and setup flavour apps
+        run: |
+          just build
+          just _clone_flavour_apps
+          just flavour_make_symlinks ${{ env.FLAVOUR }}
+          just deps-fetch --only prod
+      -
+        name: Verify flavour setup
+        run: |
+          echo "Checking if deps.js.sh exists..."
+          ls -la ./config/current_flavour/deps.js.sh || echo "WARNING: deps.js.sh not found, js dependencies may not be installed correctly"
+          echo "Current flavour contents:"
+          ls -la ./config/current_flavour/ || echo "current_flavour directory not found"
+      -
+        name: Complete flavour installation
+        run: |
+          just _deps-post-get
+          just _flavour_install ${{ env.FLAVOUR }}
+      -
+        name: Build app
+        uses: gacts/run-and-post-run@v1
+        with:
+          run: |
+            just rel-build
+            cd _build/prod/rel && tar -czvf bonfire-${{ env.FLAVOUR }}-amd64-${{ matrix.distro }}-${{ matrix.distro_version }}.tar.gz bonfire
+          post: |
+            ls .
+      - name: Release to github
+        uses: softprops/action-gh-release@v2
+        with:
+          files: _build/prod/rel/bonfire-*.tar.gz
+          name: ${{ needs.detect_version.outputs.tag }}
+          tag_name: ${{ needs.detect_version.outputs.tag }}
+          prerelease: ${{ needs.compute_tags.outputs.prerelease == 'true' }}

@@ -520,6 +520,70 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" exclude_grep
 	  done
 	}
 
+	# Remove all items from an actor's keyPackages AP collection.
+	# Works for both server-managed collection URLs (sends Remove per item) and inline arrays (Update to []).
+	# Usage: clear_kp_collection <actor_url> <bearer_token>
+	clear_kp_collection() {
+	  local actor_url="$1" token="$2"
+	  local actor_json kp_type coll_url page_url page_json items_line next_url item atype update_body remove_body
+
+	  actor_json=$(curl -sf -H "Authorization: Bearer $token" -H "Accept: application/activity+json" "$actor_url") \
+	    || { echo "Warning: could not fetch actor $actor_url" >&2; return 0; }
+
+	  kp_type=$(printf '%s' "$actor_json" | jq -r "(.keyPackages // .[\"mls:keyPackages\"] // null) | type")
+
+	  if [ "$kp_type" = "null" ]; then
+	    echo "No keyPackages, nothing to clear"; return 0
+	  fi
+
+	  if [ "$kp_type" = "array" ]; then
+	    atype=$(printf '%s' "$actor_json" | jq -r ".type // \"Person\"")
+	    update_body=$(jq -n --arg aid "$actor_url" --arg t "$atype" "{\"@context\":\"https://www.w3.org/ns/activitystreams\",\"type\":\"Update\",\"actor\":\$aid,\"to\":[\"https://www.w3.org/ns/activitystreams#Public\"],\"object\":{\"id\":\$aid,\"type\":\$t,\"keyPackages\":[]}}")
+	    curl -sf -X POST "$actor_url/outbox" -H "Authorization: Bearer $token" -H "Content-Type: application/activity+json" -d "$update_body" > /dev/null
+	    echo "Cleared inline keyPackages"; return 0
+	  fi
+
+	  coll_url=$(printf '%s' "$actor_json" | jq -r "(.keyPackages // .[\"mls:keyPackages\"]) | if type == \"string\" then . elif type == \"object\" then (.id // \"\") else \"\" end")
+	  [ -z "$coll_url" ] && { echo "Warning: could not get collection URL for $actor_url" >&2; return 0; }
+
+	  local -a item_urls=()
+	  page_url="$coll_url"
+	  local -A visited=()
+	  while [ -n "$page_url" ] && [ -z "${visited[$page_url]:-}" ]; do
+	    visited["$page_url"]=1
+	    page_json=$(curl -sf -H "Authorization: Bearer $token" -H "Accept: application/activity+json" "$page_url") || break
+
+	    items_line=$(printf '%s' "$page_json" | jq -r "[.orderedItems // .items // [] | .[] | if type == \"string\" then . else (.id // \"\") end | select(. != \"\")] | .[]")
+	    while IFS= read -r item; do
+	      [ -n "$item" ] && item_urls+=("$item")
+	    done <<< "$items_line"
+
+	    next_url=$(printf '%s' "$page_json" | jq -r "if ((.orderedItems // .items // []) | length) > 0 then (.next // \"\") | if type == \"string\" then . else (.id // \"\") end else (.first // \"\") | if type == \"string\" then . else (.id // \"\") end end")
+	    [ "$next_url" = "null" ] && next_url=""
+	    page_url="$next_url"
+	  done
+
+	  echo "Removing ${#item_urls[@]} keyPackages from $coll_url"
+	  for item in "${item_urls[@]}"; do
+	    remove_body=$(jq -n --arg aid "$actor_url" --arg obj "$item" --arg tgt "$coll_url" "{\"@context\":\"https://www.w3.org/ns/activitystreams\",\"type\":\"Remove\",\"actor\":\$aid,\"to\":[\"https://www.w3.org/ns/activitystreams#Public\"],\"object\":\$obj,\"target\":\$tgt}")
+	    curl -sf -X POST "$actor_url/outbox" -H "Authorization: Bearer $token" -H "Content-Type: application/activity+json" -d "$remove_body" > /dev/null \
+	      && echo "  Removed $item" || echo "  Warning: failed to remove $item"
+	  done
+	}
+
+	# Delete all inbox activities for an actor from the database.
+	# Removes AP activities addressed to the given actor (to/cc) so test clients don't waste
+	# time re-processing stale MLS messages from previous runs.
+	# Usage: clear_inbox <actor_url> <pg_host> <pg_user> <pg_db> [pg_password]
+	clear_inbox() {
+	  local actor_url="$1" pg_host="$2" pg_user="$3" pg_db="$4" pg_pw="${5:-}"
+	  local count
+	  count=$(PGPASSWORD="$pg_pw" psql -h "$pg_host" -U "$pg_user" -d "$pg_db" -tAc \
+	    "WITH deleted AS (DELETE FROM ap_object WHERE is_object IS NOT TRUE AND (data->'to' @> to_jsonb('$actor_url'::text) OR data->'cc' @> to_jsonb('$actor_url'::text)) RETURNING id) SELECT count(*) FROM deleted;") \
+	    || { echo "Warning: could not clear inbox for $actor_url (psql failed)" >&2; return 0; }
+	  echo "Cleared ${count// /} inbox activities for $actor_url"
+	}
+
 	# s1_alice_d1 token (server 1) — also registers the OAuth client for server 1
 	unset E2E_CLIENT_ID E2E_CLIENT_SECRET
 	e2e_token "http://localhost:4000" "${E2E_S1_ALICE_LOGIN:-$E2E_LOGIN}" "${E2E_S1_ALICE_PASSWORD:-$E2E_PASSWORD}"
@@ -529,13 +593,12 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" exclude_grep
 	# Save server-1 client credentials so bob can reuse them (avoids UUID/ULID mismatch on second registration)
 	S1_CLIENT_ID="$E2E_CLIENT_ID"; S1_CLIENT_SECRET="$E2E_CLIENT_SECRET"
 
-	# Clear stale keyPackages so s1_alice_d1 doesn't detect itself as a co-device on startup
+	# Clear stale keyPackages + inbox so clients don't waste time re-processing old MLS messages
+	PG_HOST="${POSTGRES_HOST:-localhost}" PG_USER="${POSTGRES_USER:-postgres}" PG_DB="${POSTGRES_DB:-bonfire_db}" PG_PW="${POSTGRES_PASSWORD:-}"
 	echo "Clearing stale keyPackages for s1_alice..."
-	curl -sf -X POST "$S1_ALICE_ACTOR_ID/outbox" \
-	  -H "Authorization: Bearer $S1_ALICE_TOKEN" \
-	  -H "Content-Type: application/activity+json" \
-	  -d "{\"@context\":\"https://www.w3.org/ns/activitystreams\",\"type\":\"Update\",\"actor\":\"$S1_ALICE_ACTOR_ID\",\"to\":[\"https://www.w3.org/ns/activitystreams#Public\"],\"object\":{\"id\":\"$S1_ALICE_ACTOR_ID\",\"type\":\"Person\",\"keyPackages\":[]}}" \
-	  > /dev/null || echo "Warning: could not clear keyPackages for s1_alice (may not exist yet)"
+	clear_kp_collection "$S1_ALICE_ACTOR_ID" "$S1_ALICE_TOKEN"
+	echo "Clearing stale inbox for s1_alice..."
+	clear_inbox "$S1_ALICE_ACTOR_ID" "$PG_HOST" "$PG_USER" "$PG_DB" "$PG_PW"
 
 	if [ "{{with_s2_charlie}}" = "true" ]; then
 	  # s2_charlie_d1 token (server 2) — fresh client registration on server 2
@@ -546,11 +609,9 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" exclude_grep
 	  S2_CHARLIE_TOKEN_ENDPOINT="$E2E_TOKEN_ENDPOINT"; S2_CHARLIE_AUTH_ENDPOINT="$E2E_AUTH_ENDPOINT"
 
 	  echo "Clearing stale keyPackages for s2_charlie..."
-	  curl -sf -X POST "$S2_CHARLIE_ACTOR_ID/outbox" \
-	    -H "Authorization: Bearer $S2_CHARLIE_TOKEN" \
-	    -H "Content-Type: application/activity+json" \
-	    -d "{\"@context\":\"https://www.w3.org/ns/activitystreams\",\"type\":\"Update\",\"actor\":\"$S2_CHARLIE_ACTOR_ID\",\"to\":[\"https://www.w3.org/ns/activitystreams#Public\"],\"object\":{\"id\":\"$S2_CHARLIE_ACTOR_ID\",\"type\":\"Person\",\"keyPackages\":[]}}" \
-	    > /dev/null || echo "Warning: could not clear keyPackages for s2_charlie (may not exist yet)"
+	  clear_kp_collection "$S2_CHARLIE_ACTOR_ID" "$S2_CHARLIE_TOKEN"
+	  echo "Clearing stale inbox for s2_charlie..."
+	  clear_inbox "$S2_CHARLIE_ACTOR_ID" "$PG_HOST" "$PG_USER" "$PG_DB" "$PG_PW"
 	fi
 
 	if [ "{{with_s1_bob}}" = "true" ]; then
@@ -561,11 +622,9 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" exclude_grep
 	  S1_BOB_TOKEN_ENDPOINT="$E2E_TOKEN_ENDPOINT"; S1_BOB_AUTH_ENDPOINT="$E2E_AUTH_ENDPOINT"
 
 	  echo "Clearing stale keyPackages for s1_bob..."
-	  curl -sf -X POST "$S1_BOB_ACTOR_ID/outbox" \
-	    -H "Authorization: Bearer $S1_BOB_TOKEN" \
-	    -H "Content-Type: application/activity+json" \
-	    -d "{\"@context\":\"https://www.w3.org/ns/activitystreams\",\"type\":\"Update\",\"actor\":\"$S1_BOB_ACTOR_ID\",\"to\":[\"https://www.w3.org/ns/activitystreams#Public\"],\"object\":{\"id\":\"$S1_BOB_ACTOR_ID\",\"type\":\"Person\",\"keyPackages\":[]}}" \
-	    > /dev/null || echo "Warning: could not clear keyPackages for s1_bob (may not exist yet)"
+	  clear_kp_collection "$S1_BOB_ACTOR_ID" "$S1_BOB_TOKEN"
+	  echo "Clearing stale inbox for s1_bob..."
+	  clear_inbox "$S1_BOB_ACTOR_ID" "$PG_HOST" "$PG_USER" "$PG_DB" "$PG_PW"
 	fi
 
 	echo "Rebuilding JS bundle..."
