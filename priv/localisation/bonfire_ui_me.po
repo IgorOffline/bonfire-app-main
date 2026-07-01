@@ -267,7 +267,7 @@ msgstr ""
 msgid "Base URI for mail service API (if applicable)"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_info_live.sface:67
 #, elixir-autogen, elixir-format
 msgid "Bio"
@@ -617,13 +617,13 @@ msgstr ""
 msgid "Delete Account, All Users & Data"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_live.sface:8
 #, elixir-autogen, elixir-format
 msgid "Delete User & Data"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_live.sface:9
 #, elixir-autogen, elixir-format
 msgid "Delete all the data associated with this user profile"
@@ -644,13 +644,13 @@ msgstr ""
 msgid "Deleting your account will delete all your user profiles, and remove all your data from this server. This includes all your posts, comments, and any other data associated with your account."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_live.sface:46
 #, elixir-autogen, elixir-format
 msgid "Deleting your user profile means that this user (%{username}) and all related data and activities (but not any other user profiles under this account) will be deleted."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_live.sface:20
 #, elixir-autogen, elixir-format
 msgid "Deleting your user profile will remove all associated data from this server. This includes all posts, comments, and any other data associated with this user profile. It will also send requests to delete your data to other fediverse servers."
@@ -661,6 +661,7 @@ msgstr ""
 msgid "Deletion in progress"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:23
 #, elixir-autogen, elixir-format
 msgid "Description text displayed on the welcome/about page."
@@ -929,7 +930,7 @@ msgstr ""
 msgid "Extensions"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance
+#. URLs: https://campground.bonfire.cafe/settings/user/safety https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance
 #: lib/components/settings/nav_sidebar/instance_sidebar_settings_nav_live.sface:430
 #: lib/components/settings/nav_sidebar/sidebar_settings_nav_live.sface:315
 #, elixir-autogen, elixir-format
@@ -1058,7 +1059,7 @@ msgstr ""
 msgid "Forward flags to remote instances by default"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_info_live.sface:54
 #, elixir-autogen, elixir-format
 msgid "Full name"
@@ -1251,7 +1252,7 @@ msgstr ""
 msgid "Icon changed!"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance
+#. URLs: https://campground.bonfire.cafe/settings/instance/about https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance
 #: lib/components/settings/nav_sidebar/instance_sidebar_settings_nav_live.sface:441
 #, elixir-autogen, elixir-format
 msgid "Icons"
@@ -1262,7 +1263,7 @@ msgstr ""
 msgid "If you are sure you want to delete your account, please enter your password below to confirm."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_live.sface:29
 #, elixir-autogen, elixir-format
 msgid "If you are sure you want to delete your user, please enter your password below to confirm."
@@ -2240,14 +2241,14 @@ msgstr ""
 msgid "Safety"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/instance/instance_old/terms_live.sface:88
 #: lib/components/settings/profile/edit_profile_info_live.sface:98
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_info_live.sface:97
 #, elixir-autogen, elixir-format
 msgid "Saving..."
@@ -2386,6 +2387,7 @@ msgstr ""
 msgid "Show activities from people you follow instead of discovery widgets."
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:70
 #, elixir-autogen, elixir-format
 msgid "Show digital space defaults"
@@ -2446,6 +2448,7 @@ msgstr ""
 msgid "Show reaction counts (likes/boosts)"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:71
 #, elixir-autogen, elixir-format
 msgid "Show the digital space defaults on the about page"
@@ -2457,6 +2460,7 @@ msgstr ""
 msgid "Show the number of total users on this instance"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:62
 #, elixir-autogen, elixir-format
 msgid "Show the users directory on the about page"
@@ -2468,6 +2472,7 @@ msgstr ""
 msgid "Show trending topics and hashtags."
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:61
 #, elixir-autogen, elixir-format
 msgid "Show users"
@@ -2727,7 +2732,7 @@ msgstr ""
 msgid "They are now an admin!"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/account/edit_account_live.sface:74
 #: lib/components/settings/profile/edit_profile_live.sface:28
 #, elixir-autogen, elixir-format
@@ -2755,6 +2760,7 @@ msgstr ""
 msgid "Timeline"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:10
 #, elixir-autogen, elixir-format
 msgid "Title displayed on the welcome/about page."
@@ -2777,7 +2783,7 @@ msgstr ""
 msgid "Type a strong password"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/instance https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/settings/instance/configuration
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/instance https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/settings/instance/configuration
 #: lib/components/settings/instance/config/instance_config_live.sface:44
 #: lib/components/settings/profile/edit_profile_info_live.sface:62
 #: lib/components/settings/shared_user/shared_user_live.sface:35
@@ -2959,18 +2965,20 @@ msgstr ""
 msgid "Weather Forecast"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_info_live.sface:73
 #, elixir-autogen, elixir-format
 msgid "Website"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:19
 #: lib/components/settings/instance/config/about/instance_about_live.sface:22
 #, elixir-autogen, elixir-format
 msgid "Welcome Description"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:6
 #: lib/components/settings/instance/config/about/instance_about_live.sface:9
 #, elixir-autogen, elixir-format
@@ -3091,7 +3099,7 @@ msgstr ""
 msgid "You can only identify as valid users in your account."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_info_live.sface:69
 #, elixir-autogen, elixir-format
 msgid "You can use markdown formatting."
@@ -3318,7 +3326,7 @@ msgstr ""
 msgid "user"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/members/member_live.sface:104
 #: lib/components/settings/profile/edit_profile_live.sface:42
 #, elixir-autogen, elixir-format
@@ -3492,6 +3500,7 @@ msgstr ""
 msgid "Code of conduct"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:52
 #, elixir-autogen, elixir-format
 msgid "Community Links"
@@ -3639,6 +3648,7 @@ msgstr ""
 msgid "Line"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:53
 #, elixir-autogen, elixir-format
 msgid "Links shown to visitors on the guest homepage (e.g., forum, chat, documentation)."
@@ -3925,6 +3935,7 @@ msgstr ""
 msgid "Contact an administrator of this instance to request access."
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:32
 #: lib/components/settings/instance/config/about/instance_about_live.sface:39
 #, elixir-autogen, elixir-format
@@ -3981,13 +3992,13 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_info_live.sface:45
 #, elixir-autogen, elixir-format
 msgid "Remove avatar"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_info_live.sface:43
 #, elixir-autogen, elixir-format
 msgid "Remove avatar?"
@@ -4004,6 +4015,7 @@ msgstr ""
 msgid "Request an invite"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/instance/config/about/instance_about_live.sface:33
 #: lib/components/settings/instance/config/about/instance_about_live.sface:41
 #, elixir-autogen, elixir-format
@@ -4060,7 +4072,7 @@ msgstr ""
 msgid "Federation Archipelago"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance https://campground.bonfire.cafe/settings/instance/configuration
+#. URLs: https://campground.bonfire.cafe/settings/instance/about https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance https://campground.bonfire.cafe/settings/instance/configuration
 #: lib/components/settings/nav_sidebar/instance_sidebar_settings_nav_live.sface:381
 #, elixir-autogen, elixir-format
 msgid "Federation allowlist"
@@ -4162,7 +4174,7 @@ msgstr ""
 msgid "Legal notice / site identification details for your instance (when left empty, no impressum link is shown)"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile
 #: lib/components/settings/profile/edit_profile_live.sface:24
 #, elixir-autogen, elixir-format
 msgid "Note: You can also delete [your entire account](/settings/account) and all associated users instead."

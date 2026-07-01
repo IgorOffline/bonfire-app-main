@@ -75,7 +75,7 @@ msgstr ""
 msgid "Cannot boost this"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/discussion/01KVWY9GDAWM3KSYTKSC107FR6 https://campground.bonfire.cafe/discussion/01KVWY9FDWN8FNA3T8X3VK7QA6
+#. URLs: https://campground.bonfire.cafe/dashboard https://campground.bonfire.cafe/discussion/01KVWY9GDAWM3KSYTKSC107FR6 https://campground.bonfire.cafe/discussion/01KVWY9FDWN8FNA3T8X3VK7QA6
 #: lib/components/like/like_action_live.sface:122
 #, elixir-autogen, elixir-format
 msgid "Cannot like this"
@@ -237,7 +237,7 @@ msgstr ""
 msgid "You can't boost this activity"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/discussion/01KVWY9GDAWM3KSYTKSC107FR6 https://campground.bonfire.cafe/discussion/01KVWY9FDWN8FNA3T8X3VK7QA6
+#. URLs: https://campground.bonfire.cafe/dashboard https://campground.bonfire.cafe/discussion/01KVWY9GDAWM3KSYTKSC107FR6 https://campground.bonfire.cafe/discussion/01KVWY9FDWN8FNA3T8X3VK7QA6
 #: lib/components/like/like_action_live.sface:127
 #, elixir-autogen, elixir-format
 msgid "You can't like this"

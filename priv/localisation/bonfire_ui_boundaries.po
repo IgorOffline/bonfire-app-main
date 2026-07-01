@@ -278,7 +278,7 @@ msgstr ""
 msgid "Circles"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/boundaries/circles
+#. URLs: https://campground.bonfire.cafe/circles https://campground.bonfire.cafe/settings/boundaries/circles
 #: lib/web/components/circles/my_circles_live.sface:4
 #, elixir-autogen, elixir-format
 msgid "Circles are a way to organize your connections and relations with people. Circles can be used to group people together based on your relationship, shared interests, affiliations, or other factors."
@@ -482,7 +482,7 @@ msgstr ""
 msgid "Create a new %{user_or_group_or_instance} role"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/@O_Conner_Beatty https://campground.bonfire.cafe/settings/boundaries/circles
+#. URLs: https://campground.bonfire.cafe/circles https://campground.bonfire.cafe/@O_Conner_Beatty https://campground.bonfire.cafe/settings/boundaries/circles
 #: lib/web/components/circles/add_to_circle/add_to_circle_widget_live.sface:10
 #: lib/web/components/circles/add_to_circle/add_to_circle_widget_live.sface:88
 #: lib/web/components/circles/new_circle_button_live.sface:2
@@ -912,6 +912,7 @@ msgstr ""
 msgid "Manage"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/circles
 #: lib/web/components/circles/my_circles_live.sface:46
 #, elixir-autogen, elixir-format
 msgid "Manage members"
@@ -949,7 +950,7 @@ msgstr ""
 msgid "New boundary preset"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/boundaries/circles
+#. URLs: https://campground.bonfire.cafe/circles https://campground.bonfire.cafe/settings/boundaries/circles
 #: lib/web/components/circles/new_circle_button_live.sface:9
 #: lib/web/components/circles/new_circle_button_live.sface:12
 #, elixir-autogen, elixir-format
@@ -1481,6 +1482,7 @@ msgstr ""
 msgid "Users or instances on this list will not be able to see or interact with you or your content"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/circles
 #: lib/web/components/circles/my_circles_live.sface:50
 #, elixir-autogen, elixir-format
 msgid "View feed"
@@ -1759,7 +1761,7 @@ msgstr ""
 msgid "Your %{activity_type} will only be visible to the person you are messaging (plus yourself and possibly instance admins)."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/boundaries/circles
+#. URLs: https://campground.bonfire.cafe/circles https://campground.bonfire.cafe/settings/boundaries/circles
 #: lib/web/components/circles/my_circles_live.sface:10
 #, elixir-autogen, elixir-format
 msgid "Your circles"

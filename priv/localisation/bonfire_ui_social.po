@@ -430,7 +430,7 @@ msgstr ""
 msgid "Delete archive"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/notifications https://campground.bonfire.cafe/settings/instance/flags
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/notifications https://campground.bonfire.cafe/settings/instance/flags
 #: lib/components/activity/actions/delete_object_live.sface:33
 #, elixir-autogen, elixir-format
 msgid "Delete this object"
@@ -3396,14 +3396,14 @@ msgstr ""
 msgid "DIY & Maker Spaces"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/notifications https://campground.bonfire.cafe/settings/instance/flags
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/notifications https://campground.bonfire.cafe/settings/instance/flags
 #: lib/components/activity/actions/delete_object_live.sface:35
 #: lib/components/activity/actions/delete_object_live.sface:49
 #, elixir-autogen, elixir-format
 msgid "Delete %{object_or_type}"
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/notifications https://campground.bonfire.cafe/settings/instance/flags
+#. URLs: https://campground.bonfire.cafe/settings https://campground.bonfire.cafe/settings/user/profile https://campground.bonfire.cafe/notifications https://campground.bonfire.cafe/settings/instance/flags
 #: lib/components/activity/actions/delete_object_live.sface:7
 #, elixir-autogen, elixir-format
 msgid "Delete this %{object_or_type}"

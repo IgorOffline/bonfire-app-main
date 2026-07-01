@@ -999,7 +999,7 @@ msgstr ""
 msgid "Reusable user interface components and utilities."
 msgstr ""
 
-#. URLs: https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance https://campground.bonfire.cafe/settings/instance/configuration
+#. URLs: https://campground.bonfire.cafe/settings/instance/about https://campground.bonfire.cafe/settings/instance/bonfire_ghost https://campground.bonfire.cafe/settings/instance https://campground.bonfire.cafe/settings/instance/configuration
 #: lib/components/settings/templates/settings_input_live.sface:38
 #: lib/components/settings/templates/settings_input_live.sface:60
 #: lib/components/settings/templates/settings_links_editor_live.sface:52
@@ -1319,6 +1319,7 @@ msgstr ""
 msgid "The name to display for this instance."
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/user/preferences/behaviours
 #: lib/components/settings/settings_live_handler.ex:81
 #, elixir-autogen, elixir-format
 msgid "Theme changed and loaded :-)"
@@ -1569,6 +1570,7 @@ msgstr ""
 msgid "Some short messages to show (picked randomly each time) when the page or something is loading."
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/templates/settings_links_editor_live.sface:48
 #, elixir-autogen, elixir-format
 msgid "Add link"
@@ -1614,6 +1616,7 @@ msgstr ""
 msgid "Join %{instance_name} to leave comments"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/templates/settings_links_editor_live.sface:17
 #, elixir-autogen, elixir-format
 msgid "Label"
@@ -1682,6 +1685,7 @@ msgstr ""
 msgid "group"
 msgstr ""
 
+#. URLs: https://campground.bonfire.cafe/settings/instance/about
 #: lib/components/settings/templates/settings_links_editor_live.sface:24
 #, elixir-autogen, elixir-format
 msgid "https://..."
