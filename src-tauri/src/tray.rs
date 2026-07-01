@@ -223,11 +223,24 @@ fn build_app_menu(
     let i = build_shared_items(app, current_mode)?;
 
     // Bonfire menu (leftmost, named after the app)
-    let app_menu = Submenu::with_items(
+    let app_submenu = Submenu::with_items(
         app,
         "Bonfire",
         true,
         &[&i.show, &i.messages, &i.sep1, &i.clear_db_locks, &i.clear_chat, &i.logout, &i.quit],
+    )?;
+
+    // Edit menu — clipboard actions routed to the active WebView via macOS first-responder chain
+    let edit_menu = Submenu::with_items(
+        app,
+        "Edit",
+        true,
+        &[
+            &PredefinedMenuItem::cut(app, None)?,
+            &PredefinedMenuItem::copy(app, None)?,
+            &PredefinedMenuItem::paste(app, None)?,
+            &PredefinedMenuItem::select_all(app, None)?,
+        ],
     )?;
 
     // View menu — layout modes
@@ -246,7 +259,7 @@ fn build_app_menu(
         ],
     )?;
 
-    Menu::with_items(app, &[&app_menu, &view_menu]).map_err(Into::into)
+    Menu::with_items(app, &[&app_submenu, &edit_menu, &view_menu]).map_err(Into::into)
 }
 
 /// Build the system tray icon and macOS app menu bar, sharing event handling.
@@ -254,12 +267,14 @@ fn build_app_menu(
 pub fn setup(app: &tauri::App, mode: LayoutMode) -> Result<(), Box<dyn std::error::Error>> {
     let tray_menu = build_tray_menu(app, mode)?;
 
-    let _tray = TrayIconBuilder::new()
+    let tray = TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone())
         .menu(&tray_menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| handle_menu_event(app, event.id.as_ref()))
         .build(app)?;
+    // Keep alive for the app's lifetime — dropping TrayIcon removes the icon from the menu bar.
+    app.manage(tray);
 
     // macOS app menu bar — shares the same item IDs and handler
     #[cfg(target_os = "macos")]

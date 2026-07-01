@@ -244,6 +244,14 @@ oban_stage_interval = System.get_env("OBAN_STAGE_INTERVAL_MS", "30000") |> Strin
 # average ms a producer waits before fetching more jobs after a trigger; jitter applies (0-2x actual)
 oban_dispatch_cooldown = System.get_env("OBAN_DISPATCH_COOLDOWN_MS", "5") |> String.to_integer()
 
+# Set OBAN_TESTING=inline to run jobs synchronously on insert (useful for e2e tests — makes federation between servers effectively instant so tests don't need to poll and wait).
+# Set to "manual" to disable automatic job execution entirely (useful for unit tests).
+oban_testing = case System.get_env("OBAN_TESTING") do
+  "inline" -> [testing: :inline]
+  "manual" -> [testing: :manual]
+  _ -> []
+end
+
 config :bonfire, Oban,
   notifier: oban_notifier,
   repo: Bonfire.Common.Repo,
@@ -315,6 +323,11 @@ config :activity_pub, Oban,
   # to avoid running it twice
   queues: false,
   repo: Bonfire.Common.Repo
+
+if oban_testing != [] do
+  config :bonfire, Oban, oban_testing
+  config :activity_pub, Oban, oban_testing
+end
 
 config :activity_pub, :http,
     user_agent: System.get_env("AP_USER_AGENT", "#{System.get_env("APP_NAME") || Bonfire.Application.name() || "Bonfire"} federation")

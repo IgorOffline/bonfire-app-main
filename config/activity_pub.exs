@@ -18,7 +18,13 @@ config :activity_pub,
     "hollo" => :any,
     "mitra" => :any,
     "fedify" => "1.6.0"
-  }
+  },
+  # MLS-over-ActivityPub: types counted as MLS-related for the actor's `mls:messages` collection.
+  # `object_types` are matched against an inbox activity's wrapped object type (application messages are
+  # a PrivateMessage/PublicMessage object wrapped in a Create); `activity_types` against the activity's
+  # own top-level type (for any MLS types delivered as bare activities). Extend per deployment.
+  mls_message_object_types: ["PrivateMessage", "PublicMessage", "Welcome", "GroupInfo"],
+  mls_message_activity_types: []
 
 config :nodeinfo, :adapter, Bonfire.Federate.ActivityPub.NodeinfoAdapter
 
@@ -110,9 +116,16 @@ config :activity_pub,
         "@type" => "@id",
         "@container" => "@set"
       },
-      # MLS-over-ActivityPub (https://swicg.github.io/activitypub-e2ee/): the actor's keyPackages collection
+      # MLS-over-ActivityPub (https://swicg.github.io/activitypub-e2ee/): the `mls` prefix, the actor's
+      # keyPackages collection, and the `mls:messages` collection (received MLS activities, so E2EE
+      # clients can skip scanning the inbox — https://purl.archive.org/socialweb/mls#messages)
+      "mls" => "https://purl.archive.org/socialweb/mls#",
       "keyPackages" => %{
         "@id" => "https://purl.archive.org/socialweb/mls#keyPackages",
+        "@type" => "@id"
+      },
+      "mls:messages" => %{
+        "@id" => "https://purl.archive.org/socialweb/mls#messages",
         "@type" => "@id"
       },
       # Mastodon-compatible featured collection (pinned posts)
@@ -136,10 +149,13 @@ config :activity_pub,
         "@id" => "https://w3id.org/fep/044f#quoteAuthorization",
         "@type" => "@id"
       },
-      # MLS-over-ActivityPub: KeyPackage object type
-      "KeyPackage" => "https://purl.archive.org/socialweb/mls#KeyPackage"
+      # MLS-over-ActivityPub: KeyPackage object type and endorsement fields
+      "KeyPackage" => "https://purl.archive.org/socialweb/mls#KeyPackage",
+      "mlsSignature" => "https://purl.archive.org/socialweb/mls#Signature",
+      "mlsSignerKeyId" => "https://purl.archive.org/socialweb/mls#SignerKeyId"
     }
   }
+
 
 config :hammer,
   backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}

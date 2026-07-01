@@ -450,7 +450,7 @@ test-tauri-e2e-federated grep="@federated(?!-)" exclude_grep="'@proposal'" *pw_f
 # Run 3-crowd federated Tauri e2e tests: 2 servers, 3 actors (s1_alice_d1 + s1_bob_d1 + s2_charlie_d1).
 # Set E2E_S1_ALICE_LOGIN/PASSWORD, E2E_S1_BOB_LOGIN/PASSWORD, E2E_S2_CHARLIE_LOGIN/PASSWORD in your .env.
 # Override the Playwright filter (positional): just test-tauri-e2e-federated-3crowd "staggered commit"
-test-tauri-e2e-federated-3crowd grep="@federated-3crowd" exclude_grep="" *pw_flags="": services
+test-tauri-e2e-federated-3crowd grep="@federated-3crowd" exclude_grep="'@proposal'" *pw_flags="": services
 	just _test-tauri-e2e "{{grep}}" "false" "true" "true" "{{pw_flags}}" "{{exclude_grep}}"
 
 # Run federated co-device Tauri e2e tests: 2 servers, 3 clients (s1_alice_d1 + s1_alice_d2 + s2_charlie_d1).
@@ -480,10 +480,10 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" exclude_grep
 
 	if [ "{{with_s2_charlie}}" = "true" ]; then
 	  echo "Starting server 1 (port 4000) + server 2 (port 4002) in one process..."
-	  HOT_CODE_RELOAD=0 TEST_INSTANCE=yes FEDERATE=yes DISABLE_LIVE_DEBUGGER=yes just mix phx.server &
+	  HOT_CODE_RELOAD=0 TEST_INSTANCE=yes FEDERATE=yes DISABLE_LIVE_DEBUGGER=yes ENABLE_RATE_LIMIT=no OBAN_TESTING=inline QUEUE_SIZE_AP_IN=10 QUEUE_SIZE_AP_OUT=10 just mix phx.server &
 	else
 	  echo "Starting server 1 on port 4000..."
-	  HOT_CODE_RELOAD=0 DISABLE_LIVE_DEBUGGER=yes just mix phx.server &
+	  HOT_CODE_RELOAD=0 DISABLE_LIVE_DEBUGGER=yes ENABLE_RATE_LIMIT=no OBAN_TESTING=inline just mix phx.server &
 	fi
 
 	echo "Waiting for server 1..."
@@ -611,7 +611,9 @@ test-tauri-e2e-federated-co-device grep="@federated-co-device(?!-)" exclude_grep
 	  echo "Clearing stale keyPackages for s2_charlie..."
 	  clear_kp_collection "$S2_CHARLIE_ACTOR_ID" "$S2_CHARLIE_TOKEN"
 	  echo "Clearing stale inbox for s2_charlie..."
-	  clear_inbox "$S2_CHARLIE_ACTOR_ID" "$PG_HOST" "$PG_USER" "$PG_DB" "$PG_PW"
+	  # Server 2 uses a separate DB: bonfire_dev_dance_instance_0 (config :bonfire, TestInstanceRepo, database:)
+	  PG_DB_S2="${POSTGRES_DB_S2:-bonfire_dev_dance_instance_${MIX_TEST_PARTITION:-0}}"
+	  clear_inbox "$S2_CHARLIE_ACTOR_ID" "$PG_HOST" "$PG_USER" "$PG_DB_S2" "$PG_PW"
 	fi
 
 	if [ "{{with_s1_bob}}" = "true" ]; then
